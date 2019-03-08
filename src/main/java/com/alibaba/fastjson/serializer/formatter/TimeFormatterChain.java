@@ -14,7 +14,7 @@ public class TimeFormatterChain implements TimeFormatter {
   private TimeFormatter EMPTY = new EmptyFormatter();
 
   private TimeFormatterChain() {
-    this.formatterList = new ArrayList<>(3);
+    this.formatterList = new ArrayList<TimeFormatter>(3);
     formatterList.add(DateFormatter.FORMATTER);
     formatterList.add(Jdk8TimeFormatter.FORMATTER);
     formatterList.add(JodaFormatter.FORMATTER);
