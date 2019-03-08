@@ -1,5 +1,17 @@
 package com.alibaba.fastjson.parser.deserializer;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.parser.DefaultJSONParser;
+import com.alibaba.fastjson.parser.JSONLexer;
+import com.alibaba.fastjson.parser.JSONScanner;
+import com.alibaba.fastjson.parser.JSONToken;
+import com.alibaba.fastjson.serializer.BeanContext;
+import com.alibaba.fastjson.serializer.ContextObjectSerializer;
+import com.alibaba.fastjson.serializer.JSONSerializer;
+import com.alibaba.fastjson.serializer.ObjectSerializer;
+import com.alibaba.fastjson.serializer.SerializeWriter;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson.serializer.formatter.Jdk8TimeFormatter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.Duration;
@@ -12,19 +24,11 @@ import java.time.OffsetTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.chrono.ChronoZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.parser.DefaultJSONParser;
-import com.alibaba.fastjson.parser.JSONLexer;
-import com.alibaba.fastjson.parser.JSONScanner;
-import com.alibaba.fastjson.parser.JSONToken;
-import com.alibaba.fastjson.serializer.*;
 
 public class Jdk8DateCodec extends ContextObjectDeserializer implements ObjectSerializer, ContextObjectSerializer, ObjectDeserializer {
 
@@ -472,20 +476,12 @@ public class Jdk8DateCodec extends ContextObjectDeserializer implements ObjectSe
     }
 
     private void write(SerializeWriter out, TemporalAccessor object, String format) {
-        DateTimeFormatter formatter;
-        if ("unixtime".equals(format) && object instanceof ChronoZonedDateTime) {
-            long seconds = ((ChronoZonedDateTime) object).toEpochSecond();
-            out.writeInt((int) seconds);
-            return;
+        Jdk8TimeFormatter formatter = Jdk8TimeFormatter.FORMATTER;
+        if (formatter.supportUnixTime(format, object)) {
+          out.writeInt((int) formatter.toUnixTime(object));
+          return;
         }
-
-        if (format == formatter_iso8601_pattern) {
-            formatter = formatter_iso8601;
-        } else {
-            formatter = DateTimeFormatter.ofPattern(format);
-        }
-
-        String text = formatter.format((TemporalAccessor) object);
+        String text = Jdk8TimeFormatter.FORMATTER.format(format, object);
         out.writeString(text);
     }
 }

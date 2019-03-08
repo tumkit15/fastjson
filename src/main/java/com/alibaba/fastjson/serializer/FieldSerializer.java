@@ -18,6 +18,8 @@ package com.alibaba.fastjson.serializer;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.annotation.JSONType;
+import com.alibaba.fastjson.serializer.formatter.TimeFormatter;
+import com.alibaba.fastjson.serializer.formatter.TimeFormatterChain;
 import com.alibaba.fastjson.util.FieldInfo;
 import com.alibaba.fastjson.util.TypeUtils;
 
@@ -33,7 +35,7 @@ import java.util.Date;
  * @author wenshao[szujobs@hotmail.com]
  */
 public class FieldSerializer implements Comparable<FieldSerializer> {
-
+    private TimeFormatter timeFormatter = TimeFormatterChain.TIME_FORMATTER;
     public final FieldInfo        fieldInfo;
     protected final boolean       writeNull;
     protected int                 features;
@@ -55,7 +57,7 @@ public class FieldSerializer implements Comparable<FieldSerializer> {
     protected boolean             browserCompatible;
 
     private RuntimeSerializerInfo runtimeInfo;
-    
+
     public FieldSerializer(Class<?> beanType, FieldInfo fieldInfo) {
         this.fieldInfo = fieldInfo;
         this.fieldContext = new BeanContext(beanType, fieldInfo);
@@ -83,7 +85,7 @@ public class FieldSerializer implements Comparable<FieldSerializer> {
                 }
             }
         }
-        
+
         fieldInfo.setAccessible();
 
         this.double_quoted_fieldPrefix = '"' + fieldInfo.name + "\":";
@@ -115,10 +117,10 @@ public class FieldSerializer implements Comparable<FieldSerializer> {
                     browserCompatible = true;
                 }
             }
-            
+
             features = SerializerFeature.of(annotation.serialzeFeatures());
         }
-        
+
         this.writeNull = writeNull;
 
         persistenceXToMany = TypeUtils.isAnnotationPresentOneToMany(fieldInfo.method)
@@ -156,19 +158,15 @@ public class FieldSerializer implements Comparable<FieldSerializer> {
     public Object getPropertyValue(Object object) throws InvocationTargetException, IllegalAccessException {
         Object propertyValue =  fieldInfo.get(object);
         if (format != null && propertyValue != null) {
-            if (fieldInfo.fieldClass == Date.class) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat(format, JSON.defaultLocale);
-                dateFormat.setTimeZone(JSON.defaultTimeZone);
-                return dateFormat.format(propertyValue);
-            }
+            return timeFormatter.format(format,propertyValue);
         }
         return propertyValue;
     }
-    
+
     public int compareTo(FieldSerializer o) {
         return this.fieldInfo.compareTo(o.fieldInfo);
     }
-    
+
 
     public void writeValue(JSONSerializer serializer, Object propertyValue) throws Exception {
         if (runtimeInfo == null) {
@@ -217,9 +215,9 @@ public class FieldSerializer implements Comparable<FieldSerializer> {
 
             runtimeInfo = new RuntimeSerializerInfo(fieldSerializer, runtimeFieldClass);
         }
-        
+
         final RuntimeSerializerInfo runtimeInfo = this.runtimeInfo;
-        
+
         final int fieldFeatures
                 = (disableCircularReferenceDetect
                 ? (fieldInfo.serialzeFeatures | SerializerFeature.DisableCircularReferenceDetect.mask)
@@ -273,7 +271,7 @@ public class FieldSerializer implements Comparable<FieldSerializer> {
                 return;
             }
         }
-        
+
         Class<?> valueClass = propertyValue.getClass();
         ObjectSerializer valueSerializer;
         if (valueClass == runtimeInfo.runtimeFieldClass || serializeUsing) {
@@ -281,10 +279,10 @@ public class FieldSerializer implements Comparable<FieldSerializer> {
         } else {
             valueSerializer = serializer.getObjectWriter(valueClass);
         }
-        
+
         if (format != null && !(valueSerializer instanceof DoubleSerializer || valueSerializer instanceof FloatCodec)) {
             if (valueSerializer instanceof ContextObjectSerializer) {
-                ((ContextObjectSerializer) valueSerializer).write(serializer, propertyValue, this.fieldContext);    
+                ((ContextObjectSerializer) valueSerializer).write(serializer, propertyValue, this.fieldContext);
             } else {
                 serializer.writeWithFormat(propertyValue, format);
             }
