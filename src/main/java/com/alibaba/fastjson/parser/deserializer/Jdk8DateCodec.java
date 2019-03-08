@@ -184,6 +184,10 @@ public class Jdk8DateCodec extends ContextObjectDeserializer implements ObjectSe
                 return (T) ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), JSON.defaultTimeZone.toZoneId());
             }
 
+            if (type == Instant.class) {
+                return (T) Instant.ofEpochMilli(millis);
+            }
+
             throw new UnsupportedOperationException();
         } else {
             throw new UnsupportedOperationException();
