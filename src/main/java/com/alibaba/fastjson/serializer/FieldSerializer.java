@@ -15,11 +15,10 @@
  */
 package com.alibaba.fastjson.serializer;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.annotation.JSONType;
 import com.alibaba.fastjson.serializer.formatter.TimeFormatter;
-import com.alibaba.fastjson.serializer.formatter.TimeFormatterChain;
+import com.alibaba.fastjson.serializer.formatter.TimeFormatters;
 import com.alibaba.fastjson.util.FieldInfo;
 import com.alibaba.fastjson.util.TypeUtils;
 
@@ -27,15 +26,13 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Date;
 
 /**
  * @author wenshao[szujobs@hotmail.com]
  */
 public class FieldSerializer implements Comparable<FieldSerializer> {
-    private TimeFormatter timeFormatter = TimeFormatterChain.TIME_FORMATTER;
+    private TimeFormatter timeFormatter = TimeFormatters.TIME_FORMATTER;
     public final FieldInfo        fieldInfo;
     protected final boolean       writeNull;
     protected int                 features;

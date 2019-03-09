@@ -1,23 +1,38 @@
 package com.alibaba.fastjson.serializer.formatter;
 
+import com.alibaba.fastjson.util.ClassUtils;
+import com.alibaba.fastjson.util.JavaVersion;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by jiangyu on 2019-03-08 23:45.
  */
-public class TimeFormatterChain implements TimeFormatter {
+public class TimeFormatters implements TimeFormatter {
 
-  public final static TimeFormatter TIME_FORMATTER = new TimeFormatterChain();
+  public final static TimeFormatter TIME_FORMATTER = new TimeFormatters();
 
   private List<TimeFormatter> formatterList;
   private TimeFormatter EMPTY = new EmptyFormatter();
 
-  private TimeFormatterChain() {
-    this.formatterList = new ArrayList<TimeFormatter>(3);
+  private TimeFormatters() {
+    this.formatterList = new ArrayList<TimeFormatter>(4);
     formatterList.add(DateFormatter.FORMATTER);
-    formatterList.add(Jdk8TimeFormatter.FORMATTER);
-    formatterList.add(JodaFormatter.FORMATTER);
+    if (JavaVersion.isJava8OrUpper()) {
+      TimeFormatter java8Format = (TimeFormatter) ClassUtils
+          .getFieldValue("com.alibaba.fastjson.serializer.formatter.Jdk8TimeFormatter", "FORMATTER", null);
+      if (java8Format != null) {
+        formatterList.add(java8Format);
+      }
+    }
+    if (ClassUtils.exist("org.joda.time.ReadablePartial")) {
+      TimeFormatter jodaFormat = (TimeFormatter) ClassUtils
+          .getFieldValue("com.alibaba.fastjson.serializer.formatter.JodaFormatter", "FORMATTER", null);
+      if (jodaFormat != null) {
+        formatterList.add(jodaFormat);
+      }
+      formatterList.add(JodaFormatter.FORMATTER);
+    }
     formatterList.add(EMPTY);
   }
 

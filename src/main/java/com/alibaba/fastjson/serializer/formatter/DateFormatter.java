@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Objects;
 
 /**
  * Created by jiangyu on 2019-03-08 23:47.
@@ -23,7 +22,11 @@ public class DateFormatter implements TimeFormatter {
     }
     SimpleDateFormat dateFormat = new SimpleDateFormat(format, JSON.defaultLocale);
     dateFormat.setTimeZone(JSON.defaultTimeZone);
-    return dateFormat.format(time);
+    if(time instanceof Calendar){
+      return dateFormat.format(Calendar.class.cast(time).getTime());
+    }else{
+      return dateFormat.format(time);
+    }
   }
 
   @Override
@@ -37,11 +40,11 @@ public class DateFormatter implements TimeFormatter {
 
   @Override
   public boolean supportUnixTime(String format, Object time) {
-    return Objects.equals(UNIXTIME_FORMAT, format);
+    return UNIXTIME_FORMAT.equals(format);
   }
 
   @Override
   public boolean accept(Class type) {
-    return type != null && (Date.class == type || Calendar.class == type);
+    return type != null && (Date.class.isAssignableFrom(type) || Calendar.class.isAssignableFrom(type));
   }
 }

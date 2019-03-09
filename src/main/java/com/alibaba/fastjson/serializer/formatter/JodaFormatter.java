@@ -2,7 +2,6 @@ package com.alibaba.fastjson.serializer.formatter;
 
 import com.alibaba.fastjson.JSON;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.TimeZone;
 import org.joda.time.DateTimeZone;
 import org.joda.time.ReadablePartial;
@@ -30,8 +29,8 @@ public class JodaFormatter implements TimeFormatter {
     if (format == null || format.equals("")) {
       format = formatter_iso8601_pattern;
     }
-    if (Objects.equals(formatter_iso8601_pattern, format) && Objects.equals(JSON.defaultTimeZone, TimeZone.getDefault())
-        && Objects.equals(JSON.defaultLocale, Locale.getDefault())) {
+    if (formatter_iso8601_pattern.equals(format) && JSON.defaultTimeZone.equals(TimeZone.getDefault())
+        && JSON.defaultLocale.equals(Locale.getDefault())) {
       dateFormat = formatter_iso8601;
     } else {
       dateFormat = DateTimeFormat.forPattern(format).withZone(DateTimeZone.forID(JSON.defaultTimeZone.getID()))
